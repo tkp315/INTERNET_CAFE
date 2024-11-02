@@ -1,6 +1,7 @@
 import { Service } from "@/types/models.types";
 import mongoose, { Schema } from "mongoose";
 
+
 const serviceSchema:Schema<Service> = new Schema({
   name:{
     type:String,
@@ -15,11 +16,19 @@ const serviceSchema:Schema<Service> = new Schema({
     ref:"Category",
     required:true
   },
+
   functions:[{type:String,required:true}],
+
   thumbnail:{
     type:String,
     required:false
+  },
+  Forms:[
+  {
+    type:mongoose.Schema.Types.ObjectId,
+    ref:"FormModel",
   }
+  ]
  ,
   isAvailable:{
     type:Boolean

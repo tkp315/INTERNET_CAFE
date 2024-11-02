@@ -1,5 +1,4 @@
 import connectToDB from "@/lib/db";
-import { backendClient } from "@/lib/edgestore-server";
 import { ServiceModel } from "@/models/Service.model";
 import { ServiceCategoryModel } from "@/models/ServiceCategory.model";
 import mongoose from "mongoose";
@@ -7,7 +6,7 @@ import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
 import DatauriParser from "datauri/parser";
 import path from "path";
-import { cloudinary, uploadOnCloudinary } from "@/lib/cloudinary";
+import { cloudinary } from "@/lib/cloudinary";
 
 export async function POST (req:NextRequest){
     await connectToDB();
@@ -30,9 +29,12 @@ export async function POST (req:NextRequest){
     const isAvailable = formData.get('isAvailable') as boolean |null ;
     const thumbnail = formData.get('thumbnail') as File |null;
     const functions = formData.getAll('functions')as Array<string>
-
+    const functionsFile = formData.get('functionsFile') as File | null;
+    
+   
     const allFunctions = Array.isArray(functions) ? functions:JSON.parse(functions);
     console.log(formData)
+
 
     if(!thumbnail || !(thumbnail instanceof File)){
         throw new Error("Thumbnail is required and must be a file")
@@ -63,7 +65,17 @@ export async function POST (req:NextRequest){
       );
     // const createdImage = await uploadOnCloudinary(base64Image.content,'Shop-app')
     // console.log(createdImage)
-    const cid = new mongoose.Types.ObjectId(categoryId);
+   
+    let functionsFromFile:string[]=[];
+
+    if(functionsFile && functionsFile instanceof File){
+        const functionFilePath  = await functionsFile.arrayBuffer()
+        const functionFileText = Buffer.from(functionFilePath).toString('utf8')
+        console.log(functionFileText)
+        functionsFromFile = functionFileText.split("\n").map((line)=>line.trim()).filter((line)=>line)
+        console.log(functionsFromFile)
+    }
+
 
     const isServiceExist = await ServiceModel.findOne({name:serviceName});
 
@@ -79,13 +91,14 @@ export async function POST (req:NextRequest){
         name:serviceName,
         isAvailable,
         price:servicePrice,
-        category:cid,
+        category:categoryId,
         thumbnail: createdImage.secure_url,
-        functions:allFunctions,
-        createdBy:new mongoose.Types.ObjectId(token?._id)
+        functions:functionsFromFile||allFunctions,
+        createdBy:new mongoose.Types.ObjectId(token?._id),
+     
     })
 
-    const addingServices = await ServiceCategoryModel.findByIdAndUpdate(cid,{
+    const addingServices = await ServiceCategoryModel.findByIdAndUpdate(categoryId,{
       
         $push:{
             services:newService._id
