@@ -1,7 +1,7 @@
 import { Form } from "@/types/models.types";
 import mongoose, { Schema } from "mongoose";
 
-const formData = {
+const formData = new Schema({
   type: {
     type: String,
     required: true,
@@ -14,7 +14,16 @@ const formData = {
     type: String,
     required: true,
   },
-};
+  data:{
+    type:String,
+  },
+  isRequired:{
+    type:Boolean,
+    default:false
+  }
+  
+
+},{_id:true});
 const formSchema: Schema<Form> = new Schema(
   {
     FormField: [formData],
@@ -22,6 +31,14 @@ const formSchema: Schema<Form> = new Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "ServiceModel",
     },
+    description:{
+      type:String,
+    },
+    title:{
+      type:String,
+      required:true
+    },
+  
   },
   { timestamps: true }
 );

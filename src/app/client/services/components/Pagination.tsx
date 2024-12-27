@@ -9,6 +9,7 @@ function Pagination() {
     const [page,setPage]=useState(0);
     const [limit,setLimit] =useState(5);
     const totalPages = Math.ceil(dataSet.length/limit);
+
    function logic(){
     const start_idx = (page*limit);
     const end_idx = start_idx+limit;
@@ -20,14 +21,17 @@ function Pagination() {
     if(page===0)return;
     setPage(page-1);
    }
+
    function handleNext(){
     if(page===totalPages)return;
     setPage(page+1);
    }
+
    
    function jumpToPage(curr_page){
      setPage(curr_page);
    }
+   
    const RenderCompo = ({ times }: { times: number }) => {
     return (
       <div className='flex gap-2'>

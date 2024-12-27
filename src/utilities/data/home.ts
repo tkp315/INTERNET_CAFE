@@ -5,7 +5,7 @@
     heading2:"Essential Online Services",
     desc1:"Our NetCafe provides seamless and reliable assistance for all your",
     desc2:"essential online service needs.",
-    button:"Get Started"
+    button:"Explore more "
   },
 ]
 

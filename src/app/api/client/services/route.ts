@@ -1,7 +1,9 @@
-import { ServiceCategoryModel } from "@/models/ServiceCategory.model";
+import { dbConnectionInstance } from "@/lib/db";
+import { Category } from "@/models/ServiceCategory.model";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req:NextRequest){
+    await dbConnectionInstance.connectToDB();
    try {
      const {categoryName}= await req.json();
      if(!categoryName){
@@ -11,7 +13,7 @@ export async function GET(req:NextRequest){
          })
      }
  
-     const category = await ServiceCategoryModel.findOne({name:categoryName});
+     const category = await Category.findOne({name:categoryName});
  
      const allServices = category?.services;
      

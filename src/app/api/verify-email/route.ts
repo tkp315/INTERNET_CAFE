@@ -1,4 +1,4 @@
-import connectToDB from "@/lib/db";
+import  { dbConnectionInstance } from "@/lib/db";
 import { OTPModel } from "@/models/Otp.model";
 import { UserModel } from "@/models/User.model";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,7 +8,7 @@ import { otpMarkup } from "@/utilities/templates/otpTemplate";
 
 export async function POST(req: NextRequest) {
   try {
-    await connectToDB();
+    await dbConnectionInstance.connectToDB();
 
     const { email } = await req.json();
 

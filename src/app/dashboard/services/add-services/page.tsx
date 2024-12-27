@@ -36,6 +36,8 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import UploadFile from "../components/UploadFile";
+import { CheckCircle, XCircle } from "lucide-react";
 type FormData = z.infer<typeof serviceSchema>;
 interface CategoryData {
   _id: string;
@@ -63,6 +65,7 @@ function Page() {
   const [categories, setAllCategories] = useState<Array<CategoryData>>();
   const [functions, setFunctions] = useState<Array<string>>([]);
   const [functionsFile, setFunctionFile] = useState<File | null>();
+  const [isOpen,setIsOpen] = useState(false)
   const { toast } = useToast();
 
   const insertingFunctions = (funVal: string) => {
@@ -102,26 +105,35 @@ function Page() {
     formData.append("isAvailable", data.isAvailable.toString());
     formData.append("thumbnail", data.thumbnail);
 
-    setIsSubmitting(true);
     try {
+    setIsSubmitting(true);
+      const loadingToast = toast({
+        title: "Loading",
+        action: <FiLoader className=" animate-spin" />,
+        variant: "loading",
+        duration: 1000000,
+      });
       const res = await axios.post("/api/admin/add-services", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
       console.log(res);
-
+       if(res.status===200){
       form.setValue("categoryId", "");
       form.setValue("functions", []);
       form.setValue("serviceName", "");
       form.setValue("servicePrice", "");
-
+      loadingToast.dismiss()
+      setIsOpen(false)
       toast({
         title: res.data?.success,
         description: res.data.message,
-        variant: "default",
+        variant: "success",
+        action: <CheckCircle className="w-5 h-5" />,
         duration: 5000,
       });
+    }
     } catch (error) {
       const errorMsg = axios.isAxiosError(error)
         ? error.response?.data
@@ -130,6 +142,7 @@ function Page() {
         title: "Failed",
         description: errorMsg,
         variant: "destructive",
+        action:<XCircle/>,
         duration: 5000,
       });
     } finally {
@@ -140,7 +153,9 @@ function Page() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="default">Add Services</Button>
+        <Button 
+        onClick={()=>setIsOpen(true)}
+        variant="default">Add Services</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
@@ -379,6 +394,7 @@ function Page() {
         </ScrollArea>
       </DialogContent>
     </Dialog>
+   
   );
 }
 

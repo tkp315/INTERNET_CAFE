@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { CLOUDINARY_MAX_RETRIES, CLOUDINARY_RETRY_INTERVAL } from "./constants";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -8,41 +9,36 @@ cloudinary.config({
   secure: true,  // Ensure URLs are HTTPS
 });
 
-// const uploadOnCloudinary = async function (localFilePath:string,folder:string) {
-//   try {
-//     if (!localFilePath) {
-//       console.log("File Path on local storage is not found");
-//       return null;
-//     }
+export enum ResourceType {
+  AUTO='auto',
+  IMAGE='image',
+  RAW = 'raw',
+  VIDEO='video'
+}
 
-//    console.log("this is file path",localFilePath);
-//     if (!fs.existsSync(localFilePath)) {
-//       console.log("File not found at path:", localFilePath);
-//       return null;
-//     }
 
-//     const response = await cloudinary.uploader.upload(localFilePath, {
-//       folder: folder,
-//       use_filename: true,
-//       secure: true,
-//       resource_type: 'auto',  // Auto-detect file type
-//     });
+const uploadOnCloudinary = async function (localFilePath:string,folderName:string,resource_type:ResourceType,retries:number=0) {
+  try {
+ 
+    const response = await cloudinary.uploader.upload(localFilePath, {
+      folder: folderName,
+      secure: true,
+      resource_type: resource_type,  
+    });
 
-//     // Use fs.promises to delete the local file after upload
-//     await fs.promises.unlink(localFilePath);
-//     console.log("File is uploaded on Cloudinary:", response.secure_url);
-//     return response;
-//   } catch (error) {
-//     // Ensure the local file is deleted if there's an error
-//     if (fs.existsSync(localFilePath)) {
-//       await fs.promises.unlink(localFilePath);
-//     }
-//     console.log(
-//       "File is not uploaded on Cloudinary and deleted from local storage also",
-//       error
-//     );
-//     return null;
-//   }
-// };
+    return response;
+  } catch (error) {
+   if(retries<CLOUDINARY_MAX_RETRIES){
+    await new Promise(resolve=>setTimeout(resolve,CLOUDINARY_RETRY_INTERVAL))
+    return uploadOnCloudinary(localFilePath,folderName,resource_type,retries+1)
+   }
+   else{
+    throw new Error("cloudinary upload failed after multiple tries")
+   }
+  }
+};
+
+export { uploadOnCloudinary };
+
 
 export { cloudinary };

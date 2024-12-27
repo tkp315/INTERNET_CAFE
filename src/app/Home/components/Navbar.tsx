@@ -1,88 +1,136 @@
-"use client"
-import { ThemeChanger } from '@/components/ThemeChanger'
-import { Toggle } from '@/components/ui/toggle'
-import Link from 'next/link'
-import React, { useState } from 'react'
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuItem, DropdownMenuGroup } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import { CgProfile } from "react-icons/cg"
-import { VscRequestChanges } from "react-icons/vsc"
-import { MdOutlinePendingActions, MdOutlineLanguage, MdLogout, MdAccountCircle, MdMenu, MdClose } from "react-icons/md"
+"use client";
+import { ThemeChanger } from "@/components/ThemeChanger";
+import Link from "next/link";
+import React, { useState } from "react";
+import { Home, LayoutDashboard, Settings, Info, Mail } from "lucide-react";
+
+import { usePathname } from "next/navigation";
+
+import { useIsMobile } from "@/hooks/use-mobile";
+import DropDown from "./DropDown";
+import { useSession } from "next-auth/react";
+import { ADMIN } from "@/lib/constants";
+import NotificationTray from "./notification-tray";
+
+const items = [
+  {
+    title: "Home",
+    url: "/",
+    icon: <Home className="w-5 h-5" />, // Add the Home icon
+  },
+  {
+    title: "Dashboard",
+    url: "/dashboard",
+    icon: <LayoutDashboard className="w-5 h-5" />, // Add the Dashboard icon
+  },
+  {
+    title: "Services",
+    url: "/client/services",
+    icon: <Settings className="w-5 h-5" />, // Add the Settings icon
+  },
+  {
+    title: "About",
+    url: "/about",
+    icon: <Info className="w-5 h-5" />, // Add the Info icon
+  },
+  {
+    title: "Contact",
+    url: "/contact",
+    icon: <Mail className="w-5 h-5" />, // Add the Mail icon
+  },
+];
 
 function Navbar({ children }: any) {
-  const [menuOpen, setMenuOpen] = useState(false);
+  const isMobile = useIsMobile(); // Use the `useMobile` hook
+  const currentPathRoute = usePathname();
+  const { data: session, status } = useSession();
+  console.log(isMobile);
 
   return (
-   <div>
-     <div className='flex flex-row bg-primary-foreground w-full justify-between items-center shadow-md shadow-chart-1 py-2 px-8 sm:px-8'>
-      {/* Left: Logo */}
-      <div>
-        <h1 className='font-semibold text-2xl'>IC</h1>
-      </div>
+    <div>
+      {/* Desktop UI */}
+      {!isMobile && (
+        <div className="lg:flex lg:flex-row lg:bg-primary-foreground
+        w-screen
+        lg:justify-between lg:items-center lg:shadow-md lg:shadow-chart-1 py-2 px-4 lg:overflow-x-hidden">
+          {/* Left: Logo */}
+          <div>
+            <h1 className="font-semibold text-2xl">IC</h1>
+          </div>
 
-      {/* Mobile Menu Icon: Shown on small screens, hidden on large */}
-      <div className="lg:hidden">
-        <button onClick={() => setMenuOpen(!menuOpen)} className="text-gray-700 focus:outline-none">
-          {menuOpen ? <MdClose className="text-3xl" /> : <MdMenu className="text-3xl" />}
-        </button>
-      </div>
+          {/* Navigation links */}
+          <div className="hidden lg:flex lg:flex-row lg:gap-3">
+            {items.map((item, key) => (
+              <Link
+                href={item.url}
+                className={`flex  flex-col lg:flex-row lg:gap-3 lg:items-center hover:cursor-pointer hover:text-chart-3 hover:underline  ${
+                  currentPathRoute === item.url ? ` underline text-chart-1` : ``
+                }`}
+                key={key}
+              >
+                {session?.role !== ADMIN && item.title === "Dashboard"
+                  ? ""
+                  : item.title}
+              </Link>
+            ))}
+          </div>
 
-     
-      <div className={`flex flex-col lg:flex-row lg:gap-3 absolute lg:static lg:flex visible lg:visible transition-all duration-300 ease-in-out ${menuOpen ? 'top-16 left-0 w-full bg-primary-foreground p-4' : 'hidden lg:flex'}`}>
-        <Toggle aria-label="Toggle italic"><Link href="/" className='hover:text-blue-600 hover:underline'>Home</Link></Toggle>
-        <Toggle aria-label="Toggle italic"><Link href="/services" className='hover:text-blue-600 hover:underline'>Services</Link></Toggle>
-        <Toggle aria-label="Toggle italic"><Link href="/about" className='hover:text-blue-600 hover:underline'>About</Link></Toggle>
-        <Toggle aria-label="Toggle italic"><Link href="/contact-us" className='hover:text-blue-600 hover:underline'>Contact</Link></Toggle>
-      </div>
+          {/* Right: Theme changer & Profile Dropdown */}
+          <div className="hidden lg:flex flex-row gap-6 items-center">
+            <NotificationTray />
+            <ThemeChanger />
+            <DropDown />
+          </div>
+        </div>
+      )}
 
-      {/* Right: Theme changer & Profile Dropdown */}
-      <div className='hidden lg:flex flex-row gap-6 items-center'>
-        <ThemeChanger />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline">
-              <MdAccountCircle className='text-xl' />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-36">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem className='flex gap-2 cursor-pointer'>
-                <CgProfile />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem className='flex gap-2 cursor-pointer'>
-                <VscRequestChanges />
-                Orders
-              </DropdownMenuItem>
-              <DropdownMenuItem className='flex gap-2 cursor-pointer'>
-                <MdOutlinePendingActions />
-                Cart
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+      {/* Mobile UI */}
+      {isMobile && (
+        <div>
+          <div className="flex flex-row justify-between py-2 px-2 shadow-md shadow-chart-1 items-center w-full">
+            <h1 className="text-foreground font-semibold italic">
+              Lokesh Internet Shop
+            </h1>
 
-            <DropdownMenuSeparator />
+            <div className="flex flex-row gap-2 items-center">
+              <NotificationTray />
+              <ThemeChanger />
+              <DropDown />
+            </div>
+          </div>
 
-            <DropdownMenuGroup>
-              <DropdownMenuItem className='flex gap-2 cursor-pointer'>
-                <MdOutlineLanguage />
-                Language
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+          <div className="fixed overflow bottom-0 left-0 w-full bg-primary-foreground  py-2 z-50 ">
+            <div className="flex justify-around px-2 shadow-top shadow-chart-1 py-2 ">
+              <div className="flex flex-row gap-3">
+                {items.map((item, key) => (
+                  <Link
+                    href={item.url}
+                    className={`flex flex-col lg:flex-row lg:gap-3 lg:items-center hover:cursor-pointer hover:text-chart-3  ${
+                      currentPathRoute === item.url
+                        ? ` underline text-chart-1`
+                        : ``
+                    }`}
+                    key={key}
+                  >
+                    {session?.role !== ADMIN && item.title === "Dashboard" ? (
+                      ""
+                    ) : (
+                      <div className="flex flex-col gap-2 items-center">
+                        {item.title}
+                        {item.icon}
+                      </div>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
-            <DropdownMenuSeparator />
-            <Button variant="destructive" className='w-full cursor-pointer flex gap-2'>
-              <MdLogout />
-              Log out
-            </Button>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
+      {children}
     </div>
-    {children}
-   </div>
-  )
+  );
 }
 
-export default Navbar
+export default Navbar;

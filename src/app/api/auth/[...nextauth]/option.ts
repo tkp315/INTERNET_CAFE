@@ -1,9 +1,10 @@
-import connectToDB from '@/lib/db';
+import  { dbConnectionInstance } from "@/lib/db";
 import { UserModel } from '@/models/User.model';
 import { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from 'bcrypt';
 import GoogleProvider from 'next-auth/providers/google';
+import { CLIENT } from "@/lib/constants";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -17,7 +18,7 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials: any): Promise<any> {
         const email = credentials.email;  // Fixed here
         const password = credentials.password;
-        await connectToDB();
+        await dbConnectionInstance.connectToDB();
         try {
           const user = await UserModel.findOne({ email });
           if (!user) {
@@ -46,8 +47,8 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async signIn({ account, profile }) {
-        await connectToDB();
+    async signIn({ account, profile,user }) {
+        await dbConnectionInstance.connectToDB()
   
         // Only applicable for Google logins
         if (account?.provider === "google") {
@@ -55,19 +56,18 @@ export const authOptions: NextAuthOptions = {
   
           if (!existingUser) {
             // Redirect to the verification page
-            const url = `/verify-email?email=${encodeURIComponent(profile?.email!)}`;
-            return Promise.reject(new Error(`Redirecting to ${url}`));
-          }
-  
-          if (!existingUser.isVerified) {
-            // If the user exists but is not verified, prevent login
-            throw new Error("Please verify your email before logging in.");
+            await UserModel.create({
+            name:profile?.name,
+            email:profile?.email,
+            isVerified:true,
+            role:CLIENT,
+           })
           }
         }
   
         return true; // Continue with the sign-in process
       },
-    async session({ session, token }) {
+    async session({ session, token,user }) {
       session.accessToken = token?.accessToken!;
       session.role = token?.role!;
       session._id = token?._id!;

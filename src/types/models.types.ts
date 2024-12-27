@@ -13,10 +13,15 @@ export enum Status {
   Ongoing = "Ongoing",
   Completed = "Completed",
 }
-enum PaymentStatus {
-  Success,
-  Failed,
-  Pending,
+export enum PaymentType{
+  Cash='Cash',
+  Online= 'Online'
+}
+export enum PaymentStatus {
+  Paid= "Paid",
+  Unpaid="Unpaid",
+  Pending="Pending",
+
 }
 export interface User extends Document {
   name: string;
@@ -25,6 +30,8 @@ export interface User extends Document {
   phoneNo: string;
   role: Role;
   isVerified: boolean;
+  fcmToken:string[];
+  profilePic:string;
   MyRequestedServices: Array<mongoose.Types.ObjectId>; // service requested
 }
 export interface Otp extends Document {
@@ -32,7 +39,10 @@ export interface Otp extends Document {
   otp: string;
   expiryIn: Date;
 }
-export interface Service extends Document {
+export interface Function extends Document{
+  title:string,
+}
+export interface ServiceSchema extends Document {
   name: string;
   price: string;
   category: mongoose.Types.ObjectId;
@@ -40,7 +50,7 @@ export interface Service extends Document {
   isAvailable: boolean;
   createdBy: mongoose.Types.ObjectId;
   thumbnail: string;
-  functions: Array<string>;
+  functions: Array<String>;
   Forms:Array<mongoose.Types.ObjectId>
 }
 
@@ -48,20 +58,30 @@ export interface FormFieldItem {
     name: string;
     type: string;
     label: string;
+    data?:string;
+  isRequired:boolean;
+
+   
 }
 export interface Form extends Document {
    FormField:Array<FormFieldItem>;
   service:mongoose.Types.ObjectId;
+  title:string,
+  description:string,
 }
 
 export interface ServiceRequest extends Document {
   service: mongoose.Types.ObjectId; // services
+  taskCompletion:mongoose.Types.ObjectId;
   client: mongoose.Types.ObjectId; //user
   formDetails: string; // file url (pdf url)
   completion: mongoose.Types.ObjectId;
+  paymentStatus:PaymentStatus
   status: Status;
   description?: string;
-  //assignedTo
+  requestedFunction:string[]
+  messages:string[],
+  payment:mongoose.Types.ObjectId
 }
 export interface ServiceCategory extends Document {
   name: string;
@@ -77,6 +97,8 @@ export interface Notification extends Document {
   message: string; // message
   serviceRequest: mongoose.Types.ObjectId; // to get only id
   isRead: boolean;
+  sender:mongoose.Types.ObjectId;
+  customRequest:mongoose.Types.ObjectId
 }
 
 export interface Invoice extends Document {
@@ -90,9 +112,17 @@ export interface Invoice extends Document {
 export interface Payment extends Document {
   client: mongoose.Types.ObjectId;
   amount: number;
-  servicesRequested: Array<mongoose.Types.ObjectId>;
-  paymentId: string; // rozarpay
+  serviceRequested: mongoose.Types.ObjectId;
+  orderId: string; // rozarpay
   status: PaymentStatus;
+  paymentType:PaymentType,
+  customRequest:mongoose.Types.ObjectId;
+}
+export interface Completion extends Document{
+   request:mongoose.Types.ObjectId,
+   paymentDetails:mongoose.Types.ObjectId,
+   response_receipt:string ;
+   paymentStatus:PaymentStatus// url of pdf make a dialog for uploading receipt / any kind or response
 }
 
 export interface RazorPay extends Document {
@@ -106,8 +136,8 @@ export interface RazorPay extends Document {
 // if no. of request b/w any slot of duration 30 min is greater than 10 then this slot is unavailable
 
 export interface Availability extends Document {
-  startTime: Date;
-  endTime: Date;
-  day: Date;
-  no_of_req: number;
+  startTime: string;
+  endTime: string;
+  date: Date;
+  // servicesRequested: mongoose.Types.ObjectId; 
 }

@@ -1,5 +1,5 @@
 import { Notification } from "@/types/models.types";
-import mongoose, { Schema } from "mongoose";
+import mongoose, { mongo, Schema } from "mongoose";
 
 const notificationSchema:Schema<Notification> = new Schema({
     recipient:{
@@ -13,10 +13,19 @@ const notificationSchema:Schema<Notification> = new Schema({
     serviceRequest:{
         type:mongoose.Schema.Types.ObjectId,
         ref: "ServiceRequest",
-        required:true
+    },
+    customRequest:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"OtherService"
     },
     isRead:{
         type:Boolean,
+        required:true,
+        default:false
+    },
+    sender:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required:true
     }
     

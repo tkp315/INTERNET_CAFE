@@ -3,7 +3,7 @@ import React from 'react';
 
 function FooterSection({ inputData, btn }) {
   return (
-    <div className='flex flex-col gap-4 mx-10 border border-dashed border-chart-1 rounded-xl p-7 mt-3 w-[50vw]'>
+    <div className='flex flex-col gap-4 mx-10 border border-dashed border-chart-1 rounded-xl p-7 mt-3 w-1/2'>
       {inputData.map((e, idx) => (
         <div key={idx} className='flex flex-col gap-4'>
           {/* Title */}

@@ -1,7 +1,8 @@
 import { ServiceCategory } from "@/types/models.types";
 import mongoose, { Schema } from "mongoose";
+import { serviceSchema } from "./Service.model";
 
-const serviceCategorySchema: Schema<ServiceCategory> = new Schema(
+export const serviceCategorySchema: Schema<ServiceCategory> = new Schema(
   {
     name: {
       type: String,
@@ -13,12 +14,11 @@ const serviceCategorySchema: Schema<ServiceCategory> = new Schema(
     },
     createdAt: {
       type: Date,
-      // required: true,
     },
     services: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "ServiceModel",
+        ref:"ServiceModel"
       },
     ],
     isAvailable: {
@@ -27,12 +27,12 @@ const serviceCategorySchema: Schema<ServiceCategory> = new Schema(
     },
     createdBy:{
         type:  mongoose.Schema.Types.ObjectId,
-        ref: "UserModel",
+        ref: "User",
     }
   },
   { timestamps: true }
 );
 
-export const ServiceCategoryModel =
-  (mongoose.models.Service as mongoose.Model<ServiceCategory>) ||
-  mongoose.model<ServiceCategory>("Service", serviceCategorySchema);
+export const Category =
+  (mongoose.models.Category as mongoose.Model<ServiceCategory>) ||
+  mongoose.model<ServiceCategory>("Category", serviceCategorySchema);

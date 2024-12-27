@@ -1,8 +1,10 @@
-import { Service } from "@/types/models.types";
+import {  ServiceSchema } from "@/types/models.types";
 import mongoose, { Schema } from "mongoose";
 
 
-const serviceSchema:Schema<Service> = new Schema({
+
+
+export const serviceSchema:Schema<ServiceSchema> = new Schema({
   name:{
     type:String,
     required:true
@@ -17,7 +19,9 @@ const serviceSchema:Schema<Service> = new Schema({
     required:true
   },
 
-  functions:[{type:String,required:true}],
+  functions:[
+   String
+  ],
 
   thumbnail:{
     type:String,
@@ -31,13 +35,15 @@ const serviceSchema:Schema<Service> = new Schema({
   ]
  ,
   isAvailable:{
-    type:Boolean
+    type:Boolean,
+    required:true
   },
   createdBy:{
     type:mongoose.Schema.Types.ObjectId,
-    ref:"UserModel",
+    ref:"User",
   }
+  
 
-},)
+},{timestamps:true})
 
-export const ServiceModel = (mongoose.models.ServiceModel as mongoose.Model<Service>)||(mongoose.model<Service>("ServiceModel",serviceSchema))
+export const ServiceModel = (mongoose.models.ServiceModel as mongoose.Model<ServiceSchema>)||(mongoose.model<ServiceSchema>("ServiceModel",serviceSchema))

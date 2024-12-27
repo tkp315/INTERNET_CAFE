@@ -14,11 +14,11 @@ const userSchema:Schema<User> = new Schema({
    },
    password:{
     type:String,
-    required:true
+   //  required:true
    },
    phoneNo:{
     type:String,
-    required:true
+   //  required:true
    },
    role:{
     type:String,
@@ -28,9 +28,18 @@ const userSchema:Schema<User> = new Schema({
    isVerified:{
    type:Boolean,
    },
+   fcmToken:[
+      {
+         type:String,
+         default:[]
+      }
+   ],
+   profilePic:{
+      type:String // cloudinary token
+   },
    MyRequestedServices:[{
     type:mongoose.Schema.Types.ObjectId,
-    ref:"ServiceRequest"
+    ref:"ServiceRequestModel"
    }]
 },{timestamps:true})
 

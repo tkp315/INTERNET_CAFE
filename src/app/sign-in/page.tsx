@@ -24,10 +24,14 @@ import { Button } from "@/components/ui/button";
 import { FaFacebook, FaGoogle } from "react-icons/fa";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
+
+// import { requestNotificationPermission } from "@/lib/firebase-token";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+
 type Login = z.infer<typeof loginSchema>;
 
 function Page() {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   console.log(session);
 
   const form = useForm<Login>({
@@ -53,14 +57,14 @@ function Page() {
         password: data.password,
       });
 
+      console.log(res);
       if (res?.error) {
         toast({
           title: "Login Error",
           description: res.error,
-          variant:"destructive"
+          variant: "destructive",
         });
       } else {
-        // Redirect to dashboard or home after successful login
         router.push("/");
       }
     } catch (error) {
@@ -79,12 +83,21 @@ function Page() {
   };
 
   const handleGoogleSignIn = async () => {
-    await signIn("google", { callbackUrl: "/" });
+    const res = await signIn("google", {
+      callbackUrl: "/",
+    });
+
+    console.log(res);
   };
 
+  const [showPassword, setShowPassword] = useState(false);
+  function handleShowPassword() {
+    setShowPassword(!showPassword);
+  }
+
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <Card className="max-w-lg mx-auto mt-8 border border-ring mb-2">
+    <div className="flex justify-center items-center min-h-screen ">
+      <Card className=" justify-center items-center  border border-ring mb-2">
         <CardHeader>
           <CardTitle>Login Form</CardTitle>
         </CardHeader>
@@ -98,21 +111,43 @@ function Page() {
                 <FormField
                   key={idx}
                   control={form.control}
-                  name={item.name}
+                  name={item.name as "email" | "password"}
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="">
                       <FormLabel className="text-sm font-medium">
                         {item.label}
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                          {...field}
-                          type={item.type}
-                        />
+                        <div className="relative">
+                          <Input
+                            className="border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            {...field}
+                            type={
+                              item.name === "password" && !showPassword
+                                ? "password"
+                                : "text"
+                            }
+                          />
+
+                          {item.name === "password" ? (
+                            <button
+                              onClick={handleShowPassword}
+                              type="button"
+                              className="absolute hover:bg-none right-2 top-1/2 transform -translate-y-1/2 "
+                            >
+                              {showPassword ? (
+                                <AiOutlineEyeInvisible size={20} />
+                              ) : (
+                                <AiOutlineEye size={20} />
+                              )}
+                            </button>
+                          ) : (
+                            ""
+                          )}
+                        </div>
                       </FormControl>
                       <FormMessage className="text-red-500 text-xs">
-                        {errors[item.name]?.message?.toString()}
+                        {errors[item.name as keyof Login]?.message?.toString()}
                       </FormMessage>
                     </FormItem>
                   )}
@@ -123,6 +158,14 @@ function Page() {
                 <Link href="/reset-password">
                   <Button variant="link" className="text-blue-400">
                     Reset Password
+                  </Button>
+                </Link>
+              </div>
+              <div className="">
+                <span>Don not have account please sign up</span>
+                <Link href="/sign-up">
+                  <Button variant="link" className="text-blue-500">
+                    Signup
                   </Button>
                 </Link>
               </div>

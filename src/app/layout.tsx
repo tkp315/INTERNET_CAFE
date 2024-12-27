@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { ThemeProvider } from "@/app/context/theme-provider";
-import { Toaster } from "@/components/ui/toaster";
+import { Toaster as ToastifyToaster} from "@/components/ui/toaster";
 import AuthProvider from "./context/AuthProvider";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./api/auth/[...nextauth]/option";
-
-import { Provider } from "react-redux";
-import { store } from "./redux/store";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import FirebaseServiceWorker from "./context/firebase-service-worker";
 import StoreProvider from "@/lib/StoreProvider";
-import { EdgeStoreProvider } from "@/lib/edgeStore";
+
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -42,21 +42,23 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* Redux Provider to wrap the entire app */}
-       
-          {/* Authentication Provider */}
-          <AuthProvider session={session}>
-            {/* Theme Provider to handle dark/light mode */}
-            <ThemeProvider attribute="class" defaultTheme="system">
-              
-              {/* Toaster for notifications */}
-              <Toaster />
-              <EdgeStoreProvider>
-              <StoreProvider children={children}></StoreProvider>
-              </EdgeStoreProvider>
-            </ThemeProvider>
+    
+          <FirebaseServiceWorker/>
+          <SidebarProvider>
+            <AuthProvider session={session}>
+              {/* Theme Provider to handle dark/light mode */}
 
-          </AuthProvider>
-       
+              <ThemeProvider attribute="class" defaultTheme="system">
+                {/* Toaster for notifications */}
+                <ToastifyToaster/>
+                <SonnerToaster/>
+               
+                  <StoreProvider children={children}></StoreProvider>
+                
+              </ThemeProvider>
+            </AuthProvider>
+          </SidebarProvider>
+        
       </body>
     </html>
   );
