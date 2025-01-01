@@ -6,7 +6,7 @@ const paymentSchema: Schema<Payment> = new Schema(
     serviceRequested: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "ServiceRequestModel",
-      required: true,
+      // required: true,
     },
     paymentType: {
       type: String,

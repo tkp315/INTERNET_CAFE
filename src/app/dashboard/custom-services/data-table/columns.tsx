@@ -83,7 +83,9 @@ export const columns: ColumnDef<CustomeServiceTable>[] = [
     accessorKey:'status',
     header:'Order Status',
     cell:({row})=>(
-     <StatusSelection statusData={Status} requestId={row.original.id} status={row.original.status}/>
+     <StatusSelection 
+     url={`/api/admin/other-services/update-status`}
+     statusData={Status} requestId={row.original.id} status={row.original.status}/>
     )
   },
   {

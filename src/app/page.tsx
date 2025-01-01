@@ -50,11 +50,16 @@ export default function Home() {
     // C:\Users\HP\Desktop\Internet_shop\shop-app\src\app\api\client\payment\fetch-all-payment-orders\route.ts
     const url = '/api/client/payment/fetch-all-payment-orders';
     const res = await apiCall(url,null,axios.get)
+    console.log(res);
     if(res.statusCode===200 && res.success===true){
-      const length = res.data.length;
-      dispatch(updateDialog({length,isOpen:true,isAllPaid:false}))
+      const length1 = res.data.serviceOrders;
+      const lenght2 = res.data.customOrders;
+      if(length1+lenght2>0){
+       const length= lenght2+length1
+       dispatch(updateDialog({length,isOpen:true,isAllPaid:false}))
+      }
     }
-    
+
   }
   useEffect(()=>{
     checkTheLength()
@@ -62,6 +67,7 @@ export default function Home() {
    const dispatch = useDispatch();
    const openParam:unskippableDialogType = useSelector((state)=>state.filter).unskippableDialog
    const isOpen = openParam.isOpen
+   console.log(isOpen)
   return (
     <Navbar>
       {isOpen?

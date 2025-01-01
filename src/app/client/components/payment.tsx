@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
+import useApiToast from "@/hooks/useApiToast"
 import { Status } from "@/types/models.types"
 import axios from "axios"
 import { useSession } from "next-auth/react"
@@ -11,16 +12,19 @@ interface PaymentProp{
     amount:number,
     requestId:string,
     serviceName:string,
-    createdAt:string
+    createdAt:string,
+    orderUrl:string,
+    verificationUrl:string
 }
 
-function Payment({status,amount,requestId,serviceName,createdAt}:PaymentProp) {
+function Payment({status,amount,requestId,serviceName,createdAt,orderUrl,verificationUrl}:PaymentProp) {
 const [res,setRes] = useState();
 const {data:session} = useSession();
+const apiCall= useApiToast();
 
 
    const initiatePayment = async()=>{
-    const res = await axios.post(`/api/admin/payment/razorpay-create-order`,{
+    const res = await axios.post(orderUrl,{
         requestId,amount:amount,serviceName,createdAt,clientName:session?.user?.name
     })
     console.log(res);
@@ -44,7 +48,7 @@ const {data:session} = useSession();
           name:"Lokesh Internet Shop",
           description:"Test Transaction",
           order_id:result.id,
-          callback_url:`http://localhost:3000/${requestId}/payment-verification`,
+          // callback_url:`http://localhost:3000/client/${requestId}/payment-verification`,
           prefill: {
             name: "", // Customer's name
             email: "gaurav.kumar@example.com", // Customer's email
@@ -57,14 +61,35 @@ const {data:session} = useSession();
             color: "#3399cc", // Theme color for Razorpay modal
           },
 
-        }
+          handler: async (response: any) => {
+            
+            console.log("Razorpay Payment Response:", response);
+
+            
+            const verificationResponse = await apiCall(verificationUrl, {
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
+            },axios.post);
+
+            console.log("Payment Verification Response:", verificationResponse.data);
+
+            // Handle payment verification success or failure
+            if (verificationResponse.success) {
+              alert("Payment Successful!");
+            } else {
+              alert("Payment Verification Failed!");
+            }
+          },
+        };
+
 
         const razorpay = new window.Razorpay(options)
         razorpay.open();
     }
        document.body.appendChild(script);
    }
-
+   console.log(res)
 
   return (<div>
  <Button onClick={initiatePayment} >Pay Now</Button>

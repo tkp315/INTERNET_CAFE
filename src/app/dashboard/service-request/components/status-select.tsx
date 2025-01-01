@@ -17,13 +17,14 @@ interface StatusProp{
     requestId:string,
     status:string,
     statusData:typeof Status | typeof PaymentStatus;
+    url:string;
 }
-function StatusSelection({requestId,status,statusData}:StatusProp) {
+function StatusSelection({requestId,status,statusData,url}:StatusProp) {
    
     const apiCall = useApiToast()
     const handleSelection=async (value:string)=>{
       
-      const url = `/api/admin/service-requested/requests/update-status`
+      // const url = `/api/admin/service-requested/requests/update-status`
       const result = await apiCall(url,{requestId,status:value},axios.post)
       
       console.log(result);

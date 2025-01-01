@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import { CompletionTable } from "../utils/CompletionTable";
-import StatusSelection from "../../service-request/components/status-select";
 import { PaymentStatus } from "@/types/models.types";
 import { FileText } from "lucide-react";
 import NotificationButtons from "../../service-request/components/notification-catlog";

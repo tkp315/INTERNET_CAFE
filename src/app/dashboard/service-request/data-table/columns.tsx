@@ -112,7 +112,9 @@ export const columns: ColumnDef<ServiceRequestTable>[] = [
   ),
   cell:({row})=>{
    
-    return (<StatusSelection  statusData={Status} requestId={row.original.id} status={row.original.status}/>)
+    return (<StatusSelection 
+      url={`/api/admin/service-requested/requests/update-status`}
+       statusData={Status} requestId={row.original.id} status={row.original.status}/>)
   }
 },
 {

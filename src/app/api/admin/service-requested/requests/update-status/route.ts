@@ -97,7 +97,8 @@ export async function POST(req: NextRequest) {
         });
         
         await CompletionModel.create({request:request._id,
-          paymentStatus:PaymentStatus.Unpaid
+          paymentStatus:PaymentStatus.Unpaid,
+          client:request.client._id
         });
 
 

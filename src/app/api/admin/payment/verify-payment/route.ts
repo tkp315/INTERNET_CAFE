@@ -26,13 +26,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (token.role !== ADMIN) {
-      return NextResponse.json({
-        message: "Access denied. Admins only.",
-        statusCode: 401,
-        success: false,
-      });
-    }
+   
 
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
       await req.json();
@@ -51,8 +45,10 @@ export async function POST(req: NextRequest) {
         success: false,
       });
     }
+
+    console.log(razorpay_order_id)
     const paymentDetails = await PaymentModel.findOne({
-      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
     });
 
     if (!paymentDetails) {
@@ -70,10 +66,20 @@ export async function POST(req: NextRequest) {
     // redirect(
     //   `http://localhost:3000/payment/verify?refrence=${req.body.razorpay_payment_id}`
     // );
+  const completion = await CompletionModel.findOne({request: paymentDetails.serviceRequested._id})
 
-    await CompletionModel.create({
-      paymentId: razorpay_payment_id,
-      request: paymentDetails.serviceRequested._id,
+  if(completion){
+  completion.paymentStatus=PaymentStatus.Paid;
+  completion.paymentDetails= paymentDetails._id
+   await completion.save()
+    
+  }
+    console.log(isVerified)
+    return NextResponse.json({
+      message: "Payment Verified",
+      statusCode: 200,
+      success: true,
+     data:isVerified
     });
   } catch (error) {
     console.error("Error verifying the payment:", error);

@@ -1,11 +1,16 @@
 import Payment from "@/app/client/components/payment";
 import { dbConnectionInstance } from "@/lib/db";
+import { CompletionModel } from "@/models/Completion.model";
+import { OtherService } from "@/models/OtherService.model";
 import { PaymentModel } from "@/models/Payment.model";
-import { PaymentStatus } from "@/types/models.types";
+import { PaymentStatus, Status } from "@/types/models.types";
 import mongoose from "mongoose";
 import { getToken } from "next-auth/jwt";
 import { NextRequest, NextResponse } from "next/server";
-
+interface totalOrders{
+    serviceOrders:any[],
+    customOrders:any[]
+}
 export async function GET(req: NextRequest) {
   await dbConnectionInstance.connectToDB();
 
@@ -19,12 +24,13 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    const orders = await PaymentModel.aggregate([
+    const orders = await CompletionModel.aggregate([
       {
         $match: {
           $and: [
             { client: new mongoose.Types.ObjectId(token._id) },
-            { status: PaymentStatus.Unpaid },
+            { 
+                paymentStatus: PaymentStatus.Unpaid },
           ],
         },
       },
@@ -53,7 +59,7 @@ export async function GET(req: NextRequest) {
       {
         $lookup: {
           from: "servicerequestmodels",
-          localField: "serviceRequested",
+          localField: "request",
           foreignField: "_id",
           pipeline: [
             {
@@ -90,25 +96,46 @@ export async function GET(req: NextRequest) {
         },
       },
     ]);
+    const customOrders = await OtherService.find({
+       $and:[
+        { client:new mongoose.Types.ObjectId(token._id)},
+        {paymentStatus:PaymentStatus.Unpaid},
+        {status:Status.Completed}
+       ]
+    })
 
-    if(!orders||orders.length===0){
+    
+    const totalOrders:any = {};
+    
+    if(customOrders.length>0){
+      totalOrders.customOrders= customOrders;
+    }
+    
+    if(orders.length>0){
+        totalOrders.serviceOrders = orders;
+    }
+    const isEmpty = Object.entries(totalOrders).length===0
+    if(isEmpty){
         return NextResponse.json({
             message: "No Orders Found",
             statusCode: 200,
             success: false,
           });
     }
+    
     return NextResponse.json({
         message: "Successfully fetched orders",
         statusCode: 200,
         success: true,
-        data:orders[0]
+        data:totalOrders
       });
   } catch (error) {
+    console.log(error)
     return NextResponse.json({
       message: "Unexpected Error",
       statusCode: 500,
       success: false,
+      error:error instanceof Error? error.message||error.stack:"Don't know exact Error "
     });
   }
 }

@@ -25,7 +25,7 @@ const otherServiceSchema: Schema<OtherServiceType> = new Schema(
     },
     client: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "AvailabilityModel",
+      ref: "User",
     },
     amount: {
       type: Number,

@@ -122,7 +122,8 @@ export interface Completion extends Document{
    request:mongoose.Types.ObjectId,
    paymentDetails:mongoose.Types.ObjectId,
    response_receipt:string ;
-   paymentStatus:PaymentStatus// url of pdf make a dialog for uploading receipt / any kind or response
+   paymentStatus:PaymentStatus,
+   client:mongoose.Types.ObjectId// url of pdf make a dialog for uploading receipt / any kind or response
 }
 
 export interface RazorPay extends Document {

@@ -13,7 +13,10 @@ const completionSchema: Schema<Completion> = new Schema(
       ref: "ServiceRequestModel",
       required: true,
     },
-    
+    client:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ServiceRequestModel",
+    },
     response_receipt: {
       type: String, //pdf url
     },

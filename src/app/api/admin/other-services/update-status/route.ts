@@ -98,6 +98,12 @@ export async function POST(req: NextRequest) {
         });
         
        // save the notification here also 
+       await NotificationModel.create({
+        message:JSON.stringify(payload),
+        sender:token._id,
+        recipient:request.client._id,
+        customRequest:requestId
+       })
 
 
         return NextResponse.json({

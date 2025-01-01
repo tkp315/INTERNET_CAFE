@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
 import { ADMIN } from "@/lib/constants";
 import { dbConnectionInstance } from "@/lib/db";
 import { CompletionModel } from "@/models/Completion.model";
+import { OtherService } from "@/models/OtherService.model";
 import { PaymentModel } from "@/models/Payment.model";
 import { PaymentStatus } from "@/types/models.types";
 
@@ -26,13 +28,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    if (token.role !== ADMIN) {
-      return NextResponse.json({
-        message: "Access denied. Admins only.",
-        statusCode: 401,
-        success: false,
-      });
-    }
+  
 
     const { razorpay_payment_id, razorpay_order_id, razorpay_signature } =
       await req.json();
@@ -52,7 +48,7 @@ export async function POST(req: NextRequest) {
       });
     }
     const paymentDetails = await PaymentModel.findOne({
-      paymentId: razorpay_payment_id,
+      orderId: razorpay_order_id,
     });
 
     if (!paymentDetails) {
@@ -71,10 +67,25 @@ export async function POST(req: NextRequest) {
     //   `http://localhost:3000/payment/verify?refrence=${req.body.razorpay_payment_id}`
     // );
 
-    await CompletionModel.create({
-      paymentId: razorpay_payment_id,
-      request: paymentDetails.serviceRequested._id,
+  const otherService =await OtherService.findById(paymentDetails.customRequest._id);
+
+  if (!otherService) {
+    return NextResponse.json({
+      message: "service not found",
+      statusCode: 500,
+      success: false,
     });
+  }
+
+  otherService.paymentStatus= PaymentStatus.Paid;
+  otherService.paymentDetails = paymentDetails._id as unknown as mongoose.Types.ObjectId;
+  await otherService.save()
+  return NextResponse.json({
+    message: "Payment Verified",
+    statusCode: 500,
+    success: false,
+  });
+
   } catch (error) {
     console.error("Error verifying the payment:", error);
 

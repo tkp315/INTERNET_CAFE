@@ -1,5 +1,6 @@
 import { ADMIN } from "@/lib/constants";
 import { dbConnectionInstance } from "@/lib/db";
+import { OtherService } from "@/models/OtherService.model";
 import { PaymentModel } from "@/models/Payment.model";
 import { ServiceRequestModel } from "@/models/ServiceRequest.Model";
 import { PaymentStatus, PaymentType, Status } from "@/types/models.types";
@@ -41,70 +42,25 @@ export async function POST(req: NextRequest) {
             success: false,
           });
     }
-    const {
-      requestId,
-      amount,
-      redirectUrl,
-      serviceName,
-      createdAt,
-      clientName,
-    }:InputData = await req.json();
-
    
-    const request = await ServiceRequestModel.findById(requestId);
-    if (!request) {
-      return NextResponse.json({
-        message: "Service Request not found",
-        statusCode: 401,
-        success: false,
-      });
+    const {requestId,amount}= await req.json();
+    const request = await OtherService.findById(requestId);
+    if(!request){
+        return NextResponse.json({
+            message: "Unable to find request",
+            statusCode: 500,
+            success: false,
+          });
     }
-    if (request.status !== Status.Completed) {
-      return NextResponse.json({
-        message: "Service not completed yet",
-        statusCode: 401,
-        success: false,
+    request.amount = amount ;
+     await request.save();
+     return NextResponse.json({
+        message: "Successfully added amount",
+        statusCode: 200,
+        success: true,
+        
       });
-    }
-    const clientId = request.client;
-
-    const options = {
-      // amount: Number(amount) *100,
-      amount:100*100,
-      currency: "INR",
-      receipt: `service_${requestId}`,
-      notes: {
-        client: clientId.toString(),
-        clientName: clientName,
-        serviceReq: requestId.toString(),
-      },
-    };
-
-    const order = await razorpay.orders.create(options);
-    if (!order) {
-      return NextResponse.json({
-        message: "Failed to create Razorpay order",
-        statusCode: 500,
-        success: false,
-      });
-    }
-    console.log(order);
-    await PaymentModel.create({
-      orderId: order.id,
-      paymentType: PaymentType.Online,
-      status: PaymentStatus.Pending,
-      client: clientId,
-      serviceRequested: request._id,
-      amount: Number(amount),
-    });
-
-    return NextResponse.json({
-      message: "Order created successfully",
-      statusCode: 200,
-      success: true,
-      data: order,
-
-    });
+    
   } catch (error) {
     console.error("Error creating order:", error);
 
